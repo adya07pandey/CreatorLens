@@ -1,5 +1,6 @@
 from app.services.metadata.youtube import (
-    get_youtube_data
+    get_youtube_data,
+    get_youtube_audio_url
 )
 
 from app.services.transcript.downloader import (
@@ -19,6 +20,7 @@ from urllib.parse import (
     urlparse,
     parse_qs
 )
+
 import os
 import time
 
@@ -82,8 +84,8 @@ def ingest_youtube(url):
         return normalize_ingest_result({
             "metadata": metadata,
             "transcript": transcript,
-            "metadata_source": "ytdlp",
-            "transcript_source": "youtube_transcript_api"
+            "metadata_source": "apify",
+            "transcript_source": "apify"
         })
 
     print(
@@ -97,14 +99,9 @@ def ingest_youtube(url):
 
         start = time.perf_counter()
 
-        audio_url = data.get(
-            "audio_url"
+        audio_url = get_youtube_audio_url(
+            url
         )
-
-        if not audio_url:
-            raise Exception(
-                "No audio available"
-            )
 
         audio_path = download_audio_from_url(
             audio_url
@@ -134,7 +131,7 @@ def ingest_youtube(url):
         return normalize_ingest_result({
             "metadata": metadata,
             "transcript": transcript,
-            "metadata_source": "ytdlp",
+            "metadata_source": "apify",
             "transcript_source": "whisper"
         })
 
