@@ -9,6 +9,8 @@ export async function streamChat(sessionId, message, callbacks) {
 
   let response;
   try {
+    console.log("API_BASE =", API_BASE);
+    console.log("Chat URL =", `${API_BASE}/api/chat/stream`);
     response = await fetch(`${API_BASE}/api/chat/stream`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -20,7 +22,7 @@ export async function streamChat(sessionId, message, callbacks) {
     });
   } catch {
     onError?.(
-      'Cannot reach the backend. Start it with: uvicorn app.main:app --reload --port 8000'
+      'Cannot reach the server'
     );
     return;
   }
@@ -28,7 +30,7 @@ export async function streamChat(sessionId, message, callbacks) {
   if (!response.ok) {
     let detail = response.statusText;
     if (response.status === 502) {
-      detail = 'Bad gateway — backend not running on port 8000';
+      detail = 'Bad gateway — server not running';
     } else {
       try {
         const body = await response.json();

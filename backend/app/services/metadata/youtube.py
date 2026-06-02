@@ -1,7 +1,7 @@
 import yt_dlp
 
-from youtube_transcript_api import (
-    YouTubeTranscriptApi
+from app.services.transcript.youtube import (
+    get_youtube_transcript
 )
 
 from app.utils.metadata import (
@@ -10,40 +10,6 @@ from app.utils.metadata import (
 )
 
 
-def get_video_id(url):
-
-    if "watch?v=" in url:
-        return url.split("watch?v=")[1].split("&")[0]
-
-    return None
-
-def get_youtube_transcript(video_id):
-
-    try:
-
-        api = YouTubeTranscriptApi()
-
-        transcript = api.fetch(video_id)
-
-        return normalize_transcript(
-            [
-                {
-                    "start": item.start,
-                    "end": item.start + item.duration,
-                    "text": item.text
-                }
-                for item in transcript
-            ]
-        )
-
-    except Exception as e:
-
-        print(
-            f"Transcript API failed: {e}"
-        )
-
-        return []
-    
 def get_youtube_data(url):
 
     ydl_opts = {
@@ -71,15 +37,13 @@ def get_youtube_data(url):
         "upload_date": info.get("upload_date"),
         "thumbnail": info.get("thumbnail"),
         "description": info.get("description"),
-        "platform": "youtube",
+        "platform": "youtube"
     }
 
     video_id = info.get("id")
 
     transcript = (
-        get_youtube_transcript(
-            video_id
-        )
+        get_youtube_transcript(video_id)
         if video_id
         else []
     )
@@ -88,5 +52,7 @@ def get_youtube_data(url):
         "metadata": normalize_metadata(
             raw_metadata
         ),
-        "transcript": transcript
+        "transcript": normalize_transcript(
+            transcript
+        )
     }

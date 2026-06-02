@@ -48,5 +48,5 @@ def extract_apify_metadata(item):
         "timestamp": item.get("timestamp"),
         "platform": "instagram",
     }
-
+    print(raw)
     return normalize_metadata(raw)

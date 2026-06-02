@@ -1,11 +1,27 @@
-from app.services.metadata.youtube import get_youtube_data
+from app.services.metadata.youtube import (
+    get_youtube_data
+)
 
-from app.services.transcript.downloader import download_audio
-from app.services.transcript.whisper import transcribe_video
-from app.utils.metadata import normalize_ingest_result, normalize_transcript
+from app.services.transcript.downloader import (
+    download_audio
+)
 
-from urllib.parse import urlparse, parse_qs
+from app.services.transcript.whisper import (
+    transcribe_video
+)
+
+from app.utils.metadata import (
+    normalize_ingest_result,
+    normalize_transcript
+)
+
+from urllib.parse import (
+    urlparse,
+    parse_qs
+)
+
 import os
+import time
 
 
 def clean_youtube_url(url):
@@ -13,24 +29,34 @@ def clean_youtube_url(url):
     parsed = urlparse(url)
 
     if "/shorts/" in parsed.path:
-        video_id = parsed.path.split("/shorts/")[-1].split("/")[0].split("?")[0]
+
+        video_id = (
+            parsed.path
+            .split("/shorts/")[-1]
+            .split("/")[0]
+            .split("?")[0]
+        )
+
         if video_id:
-            return f"https://www.youtube.com/watch?v={video_id}"
+
+            return (
+                f"https://www.youtube.com/watch?v={video_id}"
+            )
 
     query = parse_qs(parsed.query)
 
     if "v" in query:
-        return f"https://www.youtube.com/watch?v={query['v'][0]}"
+
+        return (
+            f"https://www.youtube.com/watch?v={query['v'][0]}"
+        )
 
     return url
 
 
-import time
-
 def ingest_youtube(url):
 
     start_total = time.perf_counter()
-
 
     url = clean_youtube_url(url)
 
@@ -58,8 +84,13 @@ def ingest_youtube(url):
             "metadata": metadata,
             "transcript": transcript,
             "metadata_source": "ytdlp",
-            "transcript_source": "ytdlp"
+            "transcript_source": "youtube_transcript_api"
         })
+
+    print(
+        "[INFO] No captions found. "
+        "Falling back to Whisper."
+    )
 
     audio_path = None
 
