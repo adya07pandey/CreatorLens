@@ -17,7 +17,7 @@ client = QdrantClient(
     api_key=os.getenv("QDRANT_API_KEY")
 )
 
-COLLECTION_NAME = "video_chunks"
+COLLECTION_NAME = "creatorlens"
 from qdrant_client.models import (
     VectorParams,
     Distance,

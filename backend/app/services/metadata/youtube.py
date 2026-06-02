@@ -1,89 +1,65 @@
-import os
 import yt_dlp
-import webvtt
 
-from app.utils.metadata import normalize_metadata, normalize_transcript
+from youtube_transcript_api import (
+    YouTubeTranscriptApi
+)
 
-TEMP_DIR = "temp"
+from app.utils.metadata import (
+    normalize_metadata,
+    normalize_transcript
+)
 
-os.makedirs(TEMP_DIR, exist_ok=True)
 
+def get_video_id(url):
 
+    if "watch?v=" in url:
+        return url.split("watch?v=")[1].split("&")[0]
 
-def parse_vtt(video_id):
+    return None
 
-    files = os.listdir(TEMP_DIR)
-
-    vtt_file = next(
-        (
-            f
-            for f in files
-            if f.startswith(video_id)
-            and f.endswith(".vtt")
-        ),
-        None
-    )
-
-    if not vtt_file:
-        return None
-
-    path = os.path.join(TEMP_DIR, vtt_file)
-
-    transcript = []
+def get_youtube_transcript(video_id):
 
     try:
 
-        for caption in webvtt.read(path):
+        api = YouTubeTranscriptApi()
 
-            text = caption.text.strip()
+        transcript = api.fetch(video_id)
 
-            if not text:
-                continue
+        return normalize_transcript(
+            [
+                {
+                    "start": item.start,
+                    "end": item.start + item.duration,
+                    "text": item.text
+                }
+                for item in transcript
+            ]
+        )
 
-            transcript.append({
-                "start": caption.start,
-                "end": caption.end,
-                "text": text
-            })
+    except Exception as e:
 
-    finally:
+        print(
+            f"Transcript API failed: {e}"
+        )
 
-        if os.path.exists(path):
-            os.remove(path)
-
-    if not transcript:
-        return None
-
-    return normalize_transcript(transcript)
-
-
+        return []
+    
 def get_youtube_data(url):
 
     ydl_opts = {
-        "skip_download": True,
-        "writesubtitles": True,
-        "writeautomaticsub": True,
-        "subtitlesformat": "vtt",
-        "outtmpl": f"{TEMP_DIR}/%(id)s.%(ext)s",
         "quiet": True,
         "no_warnings": True,
         "noplaylist": True
     }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+    with yt_dlp.YoutubeDL(
+        ydl_opts
+    ) as ydl:
 
         info = ydl.extract_info(
             url,
             download=False
         )
-
-        video_id = info["id"]
-
-        try:
-            ydl.download([url])
-            transcript = parse_vtt(video_id)
-        except Exception:
-            transcript = None
 
     raw_metadata = {
         "title": info.get("title"),
@@ -98,7 +74,19 @@ def get_youtube_data(url):
         "platform": "youtube",
     }
 
+    video_id = info.get("id")
+
+    transcript = (
+        get_youtube_transcript(
+            video_id
+        )
+        if video_id
+        else []
+    )
+
     return {
-        "metadata": normalize_metadata(raw_metadata),
-        "transcript": transcript or [],
+        "metadata": normalize_metadata(
+            raw_metadata
+        ),
+        "transcript": transcript
     }

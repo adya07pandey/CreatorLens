@@ -23,7 +23,7 @@ apify-client
 reportlab
 
 python-multipart
-
+youtube-transcript-api
 requests
 numpy
 
