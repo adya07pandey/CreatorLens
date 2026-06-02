@@ -1,39 +1,23 @@
 from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api._errors import (
-    NoTranscriptFound,
-    TranscriptsDisabled,
-    VideoUnavailable
-)
 
-
-def get_youtube_transcript(video_id):
-
+def get_youtube_transcript(video_id, url=None):
     try:
-
-        transcript = YouTubeTranscriptApi.get_transcript(
+        api = YouTubeTranscriptApi()
+        transcript = api.fetch(
             video_id,
             languages=["en", "en-US", "en-GB"]
         )
 
-        return [
-            {
-                "start": entry["start"],
-                "end": entry["start"] + entry["duration"],
-                "text": entry["text"]
-            }
-            for entry in transcript
-        ]
-
-    except (
-        NoTranscriptFound,
-        TranscriptsDisabled,
-        VideoUnavailable
-    ):
-
-        return []
-
+        if transcript:
+            return [
+                {
+                    "start": entry.start,
+                    "end": entry.start + entry.duration,
+                    "text": entry.text
+                }
+                for entry in transcript
+            ]
     except Exception as e:
-
         print(f"YouTube transcript failed: {e}")
 
-        return []
+ 
