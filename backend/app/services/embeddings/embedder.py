@@ -1,42 +1,46 @@
 import os
 import requests
 
-HF_TOKEN = os.getenv("HF_TOKEN")
-
-MODEL = "BAAI/bge-small-en-v1.5"
-
+JINA_API_KEY = os.getenv(
+    "JINA_API_KEY"
+)
 
 def get_embedding(text):
 
     response = requests.post(
-        f"https://router.huggingface.co/hf-inference/models/{MODEL}/pipeline/feature-extraction",
+        "https://api.jina.ai/v1/embeddings",
+
         headers={
-            "Authorization": f"Bearer {HF_TOKEN}",
-            "Content-Type": "application/json"
+            "Authorization":
+                f"Bearer {JINA_API_KEY}",
+            "Content-Type":
+                "application/json"
         },
+
         json={
-            "inputs": text
-        },
-        timeout=60
+            "model":
+                "jina-embeddings-v3",
+
+            "input":
+                [text]
+        }
     )
 
     response.raise_for_status()
 
-    embedding = response.json()
-
-    if isinstance(embedding[0], list):
-        embedding = embedding[0]
-
-    return embedding
+    return (
+        response.json()
+        ["data"][0]
+        ["embedding"]
+    )
 
 
 def get_document_embedding(text):
-
     return get_embedding(text)
 
 
 def get_query_embedding(query):
-
     return get_embedding(
         f"Represent this sentence for searching relevant passages: {query}"
     )
+

@@ -12,15 +12,19 @@ langgraph
 langchain
 langchain-community
 
-sentence-transformers
-
 yt-dlp
 youtube-transcript-api
+webvtt-py
 
-openai-whisper
+faster-whisper
 
 apify-client
 
 reportlab
 
 python-multipart
+
+requests
+numpy
+
+orjson
