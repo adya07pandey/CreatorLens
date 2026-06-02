@@ -5,6 +5,35 @@ TEMP_DIR = "temp"
 
 os.makedirs(TEMP_DIR, exist_ok=True)
 
+import httpx
+import tempfile
+
+def download_audio_from_url(
+    audio_url
+):
+
+    tmp = tempfile.NamedTemporaryFile(
+        suffix=".m4a",
+        delete=False
+    )
+
+    with httpx.stream(
+        "GET",
+        audio_url,
+        timeout=300
+    ) as response:
+
+        response.raise_for_status()
+
+        for chunk in response.iter_bytes():
+
+            tmp.write(chunk)
+
+    tmp.close()
+
+    return tmp.name
+
+
 def download_audio(url):
 
     ydl_opts = {
@@ -30,3 +59,4 @@ def download_audio(url):
         )
 
     return file_path
+

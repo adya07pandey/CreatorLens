@@ -3,7 +3,7 @@ from app.services.metadata.youtube import (
 )
 
 from app.services.transcript.downloader import (
-    download_audio
+    download_audio_from_url
 )
 
 from app.services.transcript.whisper import (
@@ -19,7 +19,6 @@ from urllib.parse import (
     urlparse,
     parse_qs
 )
-
 import os
 import time
 
@@ -98,7 +97,18 @@ def ingest_youtube(url):
 
         start = time.perf_counter()
 
-        audio_path = download_audio(url)
+        audio_url = data.get(
+            "audio_url"
+        )
+
+        if not audio_url:
+            raise Exception(
+                "No audio available"
+            )
+
+        audio_path = download_audio_from_url(
+            audio_url
+        )
 
         print(
             f"[TIMING] Audio download: "
