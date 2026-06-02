@@ -1,4 +1,6 @@
-import yt_dlp
+import os
+import re
+import httpx
 
 from app.services.transcript.youtube import (
     get_youtube_transcript
@@ -9,38 +11,57 @@ from app.utils.metadata import (
     normalize_transcript
 )
 
+def get_video_id(url):
+    match = re.search(r"(?:v=|youtu\.be/)([a-zA-Z0-9_-]{11})", url)
+    if not match:
+        raise Exception("Could not extract video ID")
+    return match.group(1)
+
+def parse_duration(iso):
+    if not iso:
+        return 0
+    match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', iso)
+    if not match:
+        return 0
+    h, m, s = (int(x) if x else 0 for x in match.groups())
+    return h * 3600 + m * 60 + s
 
 def get_youtube_data(url):
 
-    ydl_opts = {
-        "quiet": True,
-        "no_warnings": True,
-        "noplaylist": True
-    }
+    video_id = get_video_id(url)
 
-    with yt_dlp.YoutubeDL(
-        ydl_opts
-    ) as ydl:
+    resp = httpx.get(
+        "https://www.googleapis.com/youtube/v3/videos",
+        params={
+            "part": "snippet,statistics,contentDetails",
+            "id": video_id,
+            "key": os.environ["YOUTUBE_API_KEY"]
+        }
+    )
 
-        info = ydl.extract_info(
-            url,
-            download=False
-        )
+    resp.raise_for_status()
+    items = resp.json().get("items", [])
+
+    if not items:
+        raise Exception(f"Video not found: {video_id}")
+
+    item = items[0]
+    snippet = item.get("snippet", {})
+    stats = item.get("statistics", {})
+    content = item.get("contentDetails", {})
 
     raw_metadata = {
-        "title": info.get("title"),
-        "creator": info.get("uploader"),
-        "views": info.get("view_count"),
-        "likes": info.get("like_count"),
-        "comments": info.get("comment_count"),
-        "duration": info.get("duration"),
-        "upload_date": info.get("upload_date"),
-        "thumbnail": info.get("thumbnail"),
-        "description": info.get("description"),
+        "title": snippet.get("title"),
+        "creator": snippet.get("channelTitle"),
+        "views": int(stats.get("viewCount", 0)),
+        "likes": int(stats.get("likeCount", 0)),
+        "comments": int(stats.get("commentCount", 0)),
+        "duration": parse_duration(content.get("duration")),
+        "upload_date": snippet.get("publishedAt", "")[:10].replace("-", ""),
+        "thumbnail": snippet.get("thumbnails", {}).get("high", {}).get("url"),
+        "description": snippet.get("description"),
         "platform": "youtube"
     }
-
-    video_id = info.get("id")
 
     transcript = (
         get_youtube_transcript(video_id)
@@ -49,10 +70,6 @@ def get_youtube_data(url):
     )
 
     return {
-        "metadata": normalize_metadata(
-            raw_metadata
-        ),
-        "transcript": normalize_transcript(
-            transcript
-        )
+        "metadata": normalize_metadata(raw_metadata),
+        "transcript": normalize_transcript(transcript)
     }
