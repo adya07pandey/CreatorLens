@@ -16,7 +16,6 @@ client = QdrantClient(
     url=os.getenv("QDRANT_URL"),
     api_key=os.getenv("QDRANT_API_KEY")
 )
-print(client.get_collections())
 
 COLLECTION_NAME = "video_chunks"
 from qdrant_client.models import (
