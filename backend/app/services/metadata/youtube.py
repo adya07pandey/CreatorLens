@@ -52,7 +52,7 @@ def get_youtube_audio_url(url):
     )
     
     dataset = client.dataset(
-        run["defaultDatasetId"]
+        run.default_dataset_id
     )
     item = next(
         dataset.iterate_items(),
@@ -112,7 +112,7 @@ def get_youtube_data(url):
     )
 
     dataset = client.dataset(
-        run["defaultDatasetId"]
+        run.default_dataset_id
     )
 
     item = next(
