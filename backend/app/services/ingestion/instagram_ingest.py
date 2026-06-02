@@ -1,5 +1,4 @@
 from app.services.metadata.instagram_apify import get_reel_data, extract_apify_metadata
-from app.services.metadata.instagram_profile import get_follower_count
 from app.services.metadata.instagram_ytdlp import get_instagram_metadata_ytdlp
 
 from app.services.transcript.instagram_ytdlp import get_ytdlp_transcript
@@ -30,28 +29,7 @@ def ingest_instagram(url):
         if not transcript:
             raise Exception("Transcript missing")
 
-        try:
-
-            username = metadata.get("creator", "")
-
-            start = time.perf_counter()
-
-            followers = (
-                get_follower_count(username)
-                if username else 0
-            )
-
-            print(
-                f"[TIMING] Follower scraper: "
-                f"{time.perf_counter()-start:.2f}s"
-            )
-        except Exception as e:
-
-            print(f"Follower count failed: {e}")
-
-            followers = 0
-
-        metadata["followers"] = followers
+    
 
         transcript = [
             {
@@ -84,19 +62,8 @@ def ingest_instagram(url):
         f"[TIMING] yt-dlp metadata: "
         f"{time.perf_counter()-start:.2f}s"
     )
-    try:
+    
 
-        username = metadata.get("creator", "")
-
-        followers = get_follower_count(username) if username else 0
-
-    except Exception as e:
-
-        print(f"Follower count fallback failed: {e}")
-
-        followers = 0
-
-    metadata["followers"] = followers
 
     try:
 

@@ -28,3 +28,4 @@ requests
 numpy
 psutil
 orjson
+groq
