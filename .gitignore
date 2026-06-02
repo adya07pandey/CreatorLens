@@ -1,0 +1,35 @@
+backend/venv/
+backend/temp/
+backend/reports/
+
+frontend/node_modules/
+frontend/dist/
+
+backend/.env
+frontend/.env
+.env
+# Python
+backend/venv/
+backend/__pycache__/
+backend/**/*.pyc
+
+# Environment
+backend/.env
+frontend/.env
+.env
+
+# Temporary files
+backend/temp/
+backend/reports/
+
+# React
+frontend/node_modules/
+frontend/dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,19 @@
+.wrap {
+  text-align: center;
+  padding: 32px 20px;
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 280px;
+  margin-inline: auto;
+}

@@ -1,0 +1,88 @@
+:root {
+  --bg: #0c0c0e;
+  --bg-elevated: #131316;
+  --surface: #1a1a1f;
+  --surface-hover: #222228;
+  --border: #2c2c33;
+  --border-subtle: #222228;
+  --text: #ececf1;
+  --text-muted: #9b9ba7;
+  --text-dim: #6b6b78;
+  --accent: #7b8cff;
+  --accent-hover: #92a0ff;
+  --accent-muted: rgba(123, 140, 255, 0.12);
+  --danger: #f07178;
+  --success: #7fd99a;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --sidebar-width: 260px;
+  --header-height: 56px;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+::selection {
+  background: var(--accent-muted);
+  color: var(--text);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
