@@ -19,7 +19,9 @@ def get_reel_data(url):
     run = client.actor("apify/instagram-reel-scraper").call(run_input=run_input)
     print(type(run))
     print(run)
-    dataset = client.dataset(run["defaultDatasetId"])
+    dataset = client.dataset(
+        run.default_dataset_id
+    )
 
     items = list(dataset.iterate_items())
 

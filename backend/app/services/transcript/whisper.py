@@ -3,7 +3,8 @@ from faster_whisper import WhisperModel
 
 model = WhisperModel(
     "base",
-    device="cpu"
+    device="cpu",
+    compute_type="int8"
 )
 
 

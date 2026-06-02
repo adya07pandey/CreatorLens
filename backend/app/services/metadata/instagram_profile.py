@@ -22,7 +22,7 @@ def get_follower_count(username):
     )
 
     dataset = client.dataset(
-        run["defaultDatasetId"]
+        run.default_dataset_id
     )
 
     items = list(
