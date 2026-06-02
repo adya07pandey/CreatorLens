@@ -26,5 +26,5 @@ python-multipart
 youtube-transcript-api
 requests
 numpy
-
+psutil
 orjson

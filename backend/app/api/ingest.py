@@ -39,7 +39,14 @@ from app.services.vectorstore.qdrant import ( store_chunks)
 from app.services.llm.prompts import build_hook_prompt
 
 from app.services.insights.summary import generate_comparison_summary
+import os, psutil
 
+def log_ram(stage):
+    process = psutil.Process(os.getpid())
+    print(
+        f"[RAM] {stage}: "
+        f"{process.memory_info().rss / 1024 / 1024:.2f} MB"
+    )
 router = APIRouter()
 
 ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
@@ -74,7 +81,6 @@ def get_platform(url):
 
 
 def process_url(url):
-
     platform = get_platform(url)
 
     if platform == "instagram":
@@ -105,6 +111,7 @@ async def ingest(
                     detail="Daily session limit reached"
                 )
     try:
+        log_ram("start")
         t0 = time.perf_counter()
         result_a, result_b = await asyncio.gather(
             asyncio.to_thread(
@@ -128,12 +135,13 @@ async def ingest(
                 str(result_a)[:300],
                 flush=True,
             )
+            log_ram("video A")
             return {
                 "success": False,
                 "failed_video": "A",
                 "error": clean_error_message(result_a)
             }
-
+        log_ram("video A")
         if isinstance(
             result_b,
             Exception
@@ -144,6 +152,7 @@ async def ingest(
                 str(result_b)[:300],
                 flush=True,
             )
+            log_ram("video B")
             return {
                 "success": False,
                 "failed_video": "B",
@@ -153,7 +162,7 @@ async def ingest(
             f"[TIMING] video processing: "
             f"{time.perf_counter()-t0:.2f}s"
         )
-
+        log_ram("video B")
         try:
             
             session = create_session(
@@ -177,7 +186,7 @@ async def ingest(
                     "transcript"
                 ]
             )
-
+            log_ram("transcription A")
             video_b = create_video(
                 db=db,
                 session_id=session.id,
@@ -192,7 +201,7 @@ async def ingest(
                     "transcript"
                 ]
             )
-
+            log_ram("transcription b")
             hook_a = get_hook_text(
                 result_a["transcript"]
             )
@@ -237,6 +246,7 @@ async def ingest(
                 speech_a=speech_a,
                 speech_b=speech_b
             )
+            log_ram("summary")
             print(
                 f"[TIMING] summary generation: "
                 f"{time.perf_counter()-t1:.2f}s"
