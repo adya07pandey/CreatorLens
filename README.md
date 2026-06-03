@@ -1,283 +1,221 @@
-# 🚀 CreatorLens
+# CreatorLens — RAG Chatbot for YouTube & Instagram Content
 
-> AI-powered video comparison platform that analyzes two YouTube Shorts or Instagram Reels and explains **why one performed better**.
+A full-stack RAG (Retrieval-Augmented Generation) chatbot that ingests YouTube videos and Instagram Reels, transcribes them, and lets you have multi-turn conversations about the content with source citations and engagement analytics.
 
-CreatorLens combines transcript analysis, video metadata, vector search, and conversational RAG to generate creator-friendly insights instead of raw analytics.
-
----
-
-##  Features
-
-###  Video Comparison
-
-- Compare two YouTube Shorts or Instagram Reels
-- Generate AI-powered performance summaries
-- Identify the stronger-performing video
-- Explain why it likely outperformed the other
-
-###  AI Insights
-
-- Opening hook comparison
-- Speaking pace analysis
-- Content structure breakdown
-- Audience appeal evaluation
-- Actionable improvement suggestions
-
-###  Conversational RAG Chat
-
-- Ask follow-up questions about both videos
-- Chat directly with video transcripts
-- Session-aware conversations with memory
-- Source citations with timestamps
-
-###  Session Management
-
-- Persistent chat history
-- Session retrieval
-- PDF export support
-- Daily usage limits
+**Live Demo:** https://creatorlens-8d19.onrender.com
 
 ---
 
-##  Tech Stack
+## Features
 
-### Frontend
-
-- React
-- Vite
-- CSS Modules
-
-### Backend
-
-- FastAPI
-- LangGraph
-- OpenRouter (Qwen 3 32B)
-
-### Database
-
-- PostgreSQL (Neon)
-
-### Vector Database
-
-- Qdrant Cloud
-
-### Video Processing
-
-- yt-dlp
-- Apify
-- Faster Whisper
-
-### Deployment
-
-- Vercel
-- Render
+- **Multi-platform ingestion** — YouTube videos and Instagram Reels
+- **Multi-turn chat** with streaming responses and source citations
+- **Engagement analytics** — views, likes, comments, follower count per video
+- **Content insights** — summary, hook analysis, CTA detection, speech pace
+- **PDF report export** — generate downloadable reports per session
+- **Session management** — UUID-based sessions, persistent chat history
+- **Semantic search** — Voyage AI embeddings + Qdrant vector store
 
 ---
 
-##  System Architecture
+## Architecture
 
-```text
-User URLs
+```
+Frontend (React + Vite)
     │
     ▼
-Video Ingestion
+Backend (FastAPI + LangGraph)
+    ├── Ingestion Pipeline
+    │   ├── YouTube  → YouTube Data API v3 (metadata)
+    │   │              Supadata API (transcript) → Groq Whisper (fallback)
+    │   └── Instagram → Apify Reel Scraper (metadata + transcript)
+    │                   yt-dlp audio download → Groq Whisper (fallback)
     │
-    ▼
-Metadata Extraction
+    ├── Embedding & Storage
+    │   ├── Voyage AI voyage-3-lite (512-dim embeddings)
+    │   └── Qdrant (vector store, payload-filtered retrieval)
     │
-    ▼
-Transcript Extraction
+    ├── LangGraph Agent
+    │   ├── Retriever node (Qdrant similarity search)
+    │   ├── Context builder node
+    │   └── LLM node (GPT-4o-mini, SSE streaming)
     │
-    ▼
-Chunking
-    │
-    ▼
-Embeddings
-    │
-    ▼
-Qdrant Storage
-    │
-    ▼
-Summary Generation
-    │
-    ▼
-RAG Chat
+    └── PostgreSQL (sessions, messages, metadata, insights)
 ```
 
 ---
 
-##  Workflow
+## Tech Stack
 
-### Video Ingestion Pipeline
-
-1. User submits two video URLs
-2. Metadata is extracted
-3. Transcripts are collected
-4. Transcript chunks are embedded
-5. Chunks are stored in Qdrant
-6. Comparison summary is generated
-7. Session is saved to PostgreSQL
-
-### Chat Workflow
-
-1. User asks a question
-2. Relevant transcript chunks are retrieved
-3. Previous conversation history is loaded
-4. Context is assembled
-5. Qwen generates a response
-6. Sources are returned with timestamps
+| Layer | Technology |
+|---|---|
+| Frontend | React, Vite, CSS Modules |
+| Backend | FastAPI, LangGraph, SQLAlchemy |
+| LLM | GPT-4o-mini (OpenAI) |
+| Embeddings | Voyage AI `voyage-3-lite` (512 dims) |
+| Vector Store | Qdrant Cloud |
+| Database | PostgreSQL |
+| YouTube Metadata | YouTube Data API v3 |
+| YouTube Transcript | Supadata API → Groq Whisper fallback |
+| Instagram Scraping | Apify `instagram-reel-scraper` |
+| Audio Transcription | Groq `whisper-large-v3-turbo` |
+| PDF Export | ReportLab |
+| Hosting | Render |
 
 ---
 
-##  API Endpoints
+## Ingestion Pipeline
 
-### Compare Videos
-
-```http
-POST /api/ingest
+### YouTube
+```
+YouTube Data API v3 (metadata)
+    └── Supadata API (transcript)
+            └── RapidAPI ytjar audio download → Groq Whisper (fallback)
 ```
 
-Compare two videos and create a new analysis session.
-
----
-
-### Streaming Chat
-
-```http
-POST /api/chat/stream
+### Instagram
+```
+Apify instagram-reel-scraper (metadata + transcript)
+    └── yt-dlp audio download → Groq Whisper (fallback)
 ```
 
-Stream AI responses token-by-token.
+---
+
+## Performance
+
+Measured on Render free tier (512MB RAM):
+
+| Operation | Latency |
+|---|---|
+| YouTube metadata + transcript | ~19.76s |
+| Instagram ingest (Apify) | ~6.19s |
+| Audio download | ~1.20s |
+| Whisper transcription (Groq) | ~0.49s |
+| Qdrant retrieval | ~0.37s |
+| LLM first token | ~10.51s |
+| Stream completed | ~12.01s |
+| Full ingest pipeline | ~43s |
+| Chat stream end-to-end | ~12.44s |
+| PostgreSQL save | ~0.04s |
 
 ---
 
-### Session History
+## Project Structure
 
-```http
-GET /api/{session_id}
+```
+├── backend/
+│   ├── app/
+│   │   ├── api/                  # FastAPI route handlers
+│   │   │   ├── chat_stream.py    # SSE streaming chat
+│   │   │   ├── ingest.py         # Video ingestion endpoint
+│   │   │   ├── sessions.py       # Session management
+│   │   │   └── pdf.py            # PDF report export
+│   │   ├── graph/                # LangGraph agent
+│   │   │   ├── workflow.py       # Graph definition
+│   │   │   ├── nodes.py          # Retriever, context, LLM nodes
+│   │   │   └── states.py         # State schema
+│   │   ├── services/
+│   │   │   ├── ingestion/        # YouTube & Instagram ingest orchestrators
+│   │   │   ├── embeddings/       # Voyage AI embedder
+│   │   │   ├── retrieval/        # Qdrant retriever + context builder
+│   │   │   ├── transcript/       # Transcript fetchers + Groq Whisper
+│   │   │   ├── metadata/         # Platform metadata fetchers
+│   │   │   ├── insights/         # Summary, hooks, CTA, speech pace
+│   │   │   └── vectorstore/      # Qdrant client wrapper
+│   │   ├── db/                   # SQLAlchemy models + CRUD
+│   │   └── utils/                # Chunker, metadata normalizer, cleanup
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Chat/             # ChatPanel, ChatInput, Message
+│   │   │   ├── VideoCard/        # Video card with engagement metrics
+│   │   │   ├── Summary/          # Content insights panel
+│   │   │   └── Sidebar/          # Session list
+│   │   ├── pages/                # Home, Session
+│   │   ├── api/                  # API client functions
+│   │   └── hooks/                # useChat, useSessions
+│   └── package.json
+│
+└── docker/
+    └── docker-compose.yml
 ```
 
-Retrieve all session messages.
-
 ---
 
-### User Sessions
+## Environment Variables
 
-```http
-GET /api/sessions
+### Backend `.env`
+
+```env
+# LLM
+OPENAI_API_KEY=
+
+# Embeddings
+VOYAGE_API_KEY=
+
+# Vector Store
+QDRANT_URL=
+QDRANT_API_KEY=
+
+# Database
+DATABASE_URL=
+
+# YouTube
+YOUTUBE_API_KEY=
+
+# Instagram / YouTube scraping
+APIFY_API_TOKEN=
+
+# Transcript
+SUPADATA_API_KEY=
+GROQ_API_KEY=
+RAPIDAPI_KEY=
 ```
 
-List all available user sessions.
-
 ---
 
-### PDF Export
+## Local Development
 
-```http
-GET /api/pdf/{session_id}
-```
-
-Export session summary as a PDF document.
-
----
-
-##  Performance Benchmarks
-
-### YouTube Shorts
-
-| Stage | Time |
-|---------|---------|
-| Metadata + Transcript Extraction | ~3.5–5.2s/video |
-| Video Processing | ~3.7–5.3s |
-| Qwen Summary Generation | ~14s |
-| PostgreSQL Save | ~0.6–0.9s |
-| Qdrant Storage | ~2.8–23s |
-| Total Ingestion Time | ~22–46s |
-
-**Observed Runs**
-
-- 22.15s total ingestion (youtube shorts)
-- 46.33s total ingestion (youtube 30min videos)
-
----
-
-### Instagram Reels
-
-| Stage | Time |
-|---------|---------|
-| Apify Reel Scraper | 32.40s |
-| Follower Scraper | 17.22s |
-| Video Processing | 49.64s |
-| Qwen Summary Generation | 8.24s |
-| PostgreSQL Save | 0.71s |
-| Qdrant Storage | 2.96s |
-| Total Ingestion Time | 62.78s |
-
-> Instagram ingestion is slower because metadata extraction, transcript generation, and creator statistics require multiple external services.
-
----
-
-##  Local Setup
+### Prerequisites
+- Python 3.11+
+- Node.js 18+
+- Docker (optional, for Qdrant + PostgreSQL)
 
 ### Backend
 
 ```bash
 cd backend
-
 python -m venv venv
-
-source venv/bin/activate
-
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8000
 ```
 
 ### Frontend
 
 ```bash
 cd frontend
-
 npm install
-
 npm run dev
 ```
 
----
+### Docker (Qdrant + PostgreSQL)
 
-##  Environment Variables
-
-### Backend
-
-```env
-DATABASE_URL=
-
-OPENROUTER_API_KEY=
-
-QDRANT_URL=
-QDRANT_API_KEY=
-
-APIFY_TOKEN=
-
-HF_TOKEN=
-```
-
-### Frontend
-
-```env
-VITE_API_URL=
+```bash
+docker-compose -f docker/docker-compose.yml up -d
 ```
 
 ---
 
-##  Future Improvements
+## API Endpoints
 
-- Multi-video comparison
-- Viral pattern detection
-- Creator benchmarking
-- Trend discovery
-- Team workspaces
-- Analytics dashboard
-- Batch processing
-
----
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/ingest` | Ingest YouTube or Instagram URLs |
+| POST | `/api/chat/stream` | Streaming chat (SSE) |
+| GET | `/api/` | List sessions for user |
+| GET | `/api/session/{id}/details` | Session metadata + videos |
+| GET | `/api/{session_id}` | Chat history |
+| POST | `/api/pdf/{session_id}` | Generate PDF report |
