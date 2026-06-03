@@ -37,7 +37,7 @@ Frontend (React + Vite)
 Backend (FastAPI + LangGraph)
     ├── Ingestion Pipeline
     │   ├── YouTube  → YouTube Data API v3 (metadata)
-    │   │              Supadata API (transcript) → Groq Whisper (fallback)
+    │   │              Rapid API (audio download) → Groq Whisper (fallback)
     │   └── Instagram → Apify Reel Scraper (metadata + transcript)
     │                   yt-dlp audio download → Groq Whisper (fallback)
     │
@@ -48,7 +48,7 @@ Backend (FastAPI + LangGraph)
     ├── LangGraph Agent
     │   ├── Retriever node (Qdrant similarity search)
     │   ├── Context builder node
-    │   └── LLM node (GPT-4o-mini, SSE streaming)
+    │   └── LLM node (qwen/qwen3-32b, SSE streaming)
     │
     └── PostgreSQL (sessions, messages, metadata, insights)
 ```
@@ -61,16 +61,16 @@ Backend (FastAPI + LangGraph)
 |---|---|
 | Frontend | React, Vite, CSS Modules |
 | Backend | FastAPI, LangGraph, SQLAlchemy |
-| LLM | GPT-4o-mini (OpenAI) |
+| LLM | qwen3-32b (OpenRouter) |
 | Embeddings | Voyage AI `voyage-3-lite` (512 dims) |
 | Vector Store | Qdrant Cloud |
 | Database | PostgreSQL |
 | YouTube Metadata | YouTube Data API v3 |
-| YouTube Transcript | Supadata API → Groq Whisper fallback |
+| YouTube Transcript | Rapid API → Groq Whisper fallback |
 | Instagram Scraping | Apify `instagram-reel-scraper` |
 | Audio Transcription | Groq `whisper-large-v3-turbo` |
 | PDF Export | ReportLab |
-| Hosting | Render |
+| Hosting | Render | Vercel |
 
 ---
 
@@ -78,8 +78,7 @@ Backend (FastAPI + LangGraph)
 
 ### YouTube
 ```
-YouTube Data API v3 (metadata)
-    └── Supadata API (transcript)
+YouTube Data API v3 (metadata + transcript)
             └── RapidAPI ytjar audio download → Groq Whisper (fallback)
 ```
 
@@ -160,7 +159,7 @@ Measured on Render free tier (512MB RAM):
 
 ```env
 # LLM
-OPENAI_API_KEY=
+OPENROUTER_API_KEY=
 
 # Embeddings
 VOYAGE_API_KEY=
@@ -179,7 +178,6 @@ YOUTUBE_API_KEY=
 APIFY_API_TOKEN=
 
 # Transcript
-SUPADATA_API_KEY=
 GROQ_API_KEY=
 RAPIDAPI_KEY=
 ```
