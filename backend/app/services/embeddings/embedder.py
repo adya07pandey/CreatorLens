@@ -1,26 +1,23 @@
 import os
 
 from dotenv import load_dotenv
-from sentence_transformers import SentenceTransformer
+import voyageai
 
 load_dotenv()
 
-HF_TOKEN = os.getenv("HF_TOKEN")
-
-model = SentenceTransformer(
-    "sentence-transformers/all-MiniLM-L6-v2",
-    token=HF_TOKEN
+client = voyageai.Client(
+    api_key=os.getenv("VOYAGE_API_KEY")
 )
 
 
 def get_embedding(text: str):
 
-    embedding = model.encode(
-        text,
-        normalize_embeddings=True
+    result = client.embed(
+        [text],
+        model="voyage-3-lite"
     )
 
-    return embedding.tolist()
+    return result.embeddings[0]
 
 
 def get_document_embedding(text: str):
