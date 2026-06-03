@@ -8,10 +8,9 @@ export async function streamChat(sessionId, message, callbacks) {
   const { onToken, onSources, onDone, onError } = callbacks;
 
   let response;
-  
+
   try {
-    console.log("API_BASE =", API_BASE);
-    console.log("Chat URL =", `${API_BASE}/api/chat/stream`);
+
     response = await fetch(`${API_BASE}/api/chat/stream`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -21,6 +20,7 @@ export async function streamChat(sessionId, message, callbacks) {
         message,
       }),
     });
+    console.log("API RESPONSE", response);
   } catch {
     onError?.(
       'Cannot reach the server'
