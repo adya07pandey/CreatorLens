@@ -1,11 +1,6 @@
-from app.services.metadata.youtube import (
-    get_youtube_data,
-    get_audio_download_url
-)
+from app.services.metadata.youtube import ( get_youtube_data,  get_audio_download_url)
 
-from app.services.transcript.downloader import (
-    download_audio_from_url
-)
+from app.services.transcript.downloader import (  download_audio_from_url)
 
 from app.services.transcript.whisper import (
     transcribe_video
@@ -20,7 +15,7 @@ from urllib.parse import (
     urlparse,
     parse_qs
 )
-
+from app.services.transcript.downloader import delete_audio_file
 import os
 import time
 
@@ -151,9 +146,4 @@ def ingest_youtube(url):
 
     finally:
 
-        if (
-            audio_path
-            and
-            os.path.exists(audio_path)
-        ):
-            os.remove(audio_path)
+        delete_audio_file(audio_path)

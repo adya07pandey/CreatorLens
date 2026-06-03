@@ -1,6 +1,6 @@
 from app.services.metadata.instagram_apify import get_reel_data, extract_apify_metadata
 from app.services.metadata.instagram_ytdlp import get_instagram_metadata_ytdlp
-
+from app.services.transcript.downloader import delete_audio_file
 from app.services.transcript.instagram_ytdlp import get_ytdlp_transcript
 from app.services.transcript.whisper import transcribe_video
 from app.services.transcript.downloader import download_audio
@@ -131,5 +131,4 @@ def ingest_instagram(url):
 
     finally:
 
-        if audio_path and os.path.exists(audio_path):
-            os.remove(audio_path)
+        delete_audio_file(audio_path)
