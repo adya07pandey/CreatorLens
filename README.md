@@ -2,7 +2,7 @@
 
 A full-stack RAG (Retrieval-Augmented Generation) chatbot that ingests YouTube videos and Instagram Reels, transcribes them, and lets you have multi-turn conversations about the content with source citations and engagement analytics.
 
-**Live Demo:** https://creatorlens-8d19.onrender.com
+**Live Demo:** https://creator-lens-seven.vercel.app/
 
 ---
 
