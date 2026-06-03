@@ -1,37 +1,13 @@
+import httpx
+import os
 import os
 import yt_dlp
+import httpx
+import tempfile
 
 TEMP_DIR = "temp"
 
 os.makedirs(TEMP_DIR, exist_ok=True)
-
-import httpx
-import tempfile
-
-def download_audio_from_url(
-    audio_url
-):
-
-    tmp = tempfile.NamedTemporaryFile(
-        suffix=".m4a",
-        delete=False
-    )
-
-    with httpx.stream(
-        "GET",
-        audio_url,
-        timeout=300
-    ) as response:
-
-        response.raise_for_status()
-
-        for chunk in response.iter_bytes():
-
-            tmp.write(chunk)
-
-    tmp.close()
-
-    return tmp.name
 
 
 def download_audio(url):
@@ -60,3 +36,41 @@ def download_audio(url):
 
     return file_path
 
+
+
+
+def download_audio_from_url(audio_url):
+
+    print(
+        f"[INFO] Downloading audio from: {audio_url[:100]}..."
+    )
+
+    tmp = tempfile.NamedTemporaryFile(
+        suffix=".mp3",
+        delete=False
+    )
+
+    with httpx.stream(
+        "GET",
+        audio_url,
+        timeout=600
+    ) as response:
+
+        response.raise_for_status()
+
+        print(
+            f"[INFO] Audio status: {response.status_code}"
+        )
+
+        for chunk in response.iter_bytes():
+
+            if chunk:
+                tmp.write(chunk)
+
+    tmp.close()
+
+    print(
+        f"[INFO] Saved audio: {tmp.name}"
+    )
+
+    return tmp.name

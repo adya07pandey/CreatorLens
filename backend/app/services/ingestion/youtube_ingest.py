@@ -1,6 +1,6 @@
 from app.services.metadata.youtube import (
     get_youtube_data,
-    get_youtube_audio_url
+    get_audio_download_url
 )
 
 from app.services.transcript.downloader import (
@@ -99,10 +99,24 @@ def ingest_youtube(url):
 
         start = time.perf_counter()
 
-        audio_url = get_youtube_audio_url(
-            url
+        video_id = data.get(
+            "video_id"
         )
 
+        if not video_id:
+            raise Exception(
+                "No video id found"
+            )
+
+        try:
+            audio_url = get_audio_download_url(
+                video_id
+            )
+        except Exception as e:
+            raise Exception(
+                f"RapidAPI audio failed: {e}"
+            )
+        
         audio_path = download_audio_from_url(
             audio_url
         )

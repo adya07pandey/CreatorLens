@@ -1,23 +1,28 @@
-from youtube_transcript_api import YouTubeTranscriptApi
+import httpx
+import os
 
-def get_youtube_transcript(video_id, url=None):
-    try:
-        api = YouTubeTranscriptApi()
-        transcript = api.fetch(
-            video_id,
-            languages=["en", "en-US", "en-GB"]
-        )
+def download_youtube_audio(video_id, output_path):
+    # Step 1: Get direct download URL (waits until ready, max 15 min videos)
+    resp = httpx.get(
+        f"https://ytjar.p.rapidapi.com/dl/{video_id}",
+        params={
+            "wait_until_the_file_is_ready": "true",
+            "quality": "low"  # smaller file = faster Groq upload
+        },
+        headers={
+            "X-RapidAPI-Key": os.environ["RAPIDAPI_KEY"],
+            "X-RapidAPI-Host": "ytjar.p.rapidapi.com"
+        },
+        timeout=300  # up to 300s for processing
+    )
+    resp.raise_for_status()
+    download_url = resp.json()["link"]
 
-        if transcript:
-            return [
-                {
-                    "start": entry.start,
-                    "end": entry.start + entry.duration,
-                    "text": entry.text
-                }
-                for entry in transcript
-            ]
-    except Exception as e:
-        print(f"YouTube transcript failed: {e}")
+    # Step 2: Download the audio file
+    audio_resp = httpx.get(download_url, timeout=60)
+    audio_resp.raise_for_status()
 
- 
+    with open(output_path, "wb") as f:
+        f.write(audio_resp.content)
+
+    return output_path

@@ -1,15 +1,18 @@
-import os
-from dotenv import load_dotenv
-load_dotenv()
 from apify_client import ApifyClient
+from dotenv import load_dotenv
+
 from app.utils.metadata import (
     normalize_metadata,
     normalize_transcript
 )
-APIFY_TOKEN_2 = os.getenv("APIFY_TOKEN_2")
+
+import os
+import httpx
+
+load_dotenv()
 
 client = ApifyClient(
-    APIFY_TOKEN_2
+    os.getenv("APIFY_TOKEN_2")
 )
 
 
@@ -20,9 +23,7 @@ def extract_transcript(item):
     if not subtitles:
         return []
 
-    subtitle = subtitles[0]
-
-    srt = subtitle.get("srt")
+    srt = subtitles[0].get("srt")
 
     if not srt:
         return []
@@ -34,60 +35,33 @@ def extract_transcript(item):
     }]
 
 
-def get_youtube_audio_url(url):
+def get_audio_download_url(video_id):
 
-    run_input = {
-        "video_urls": [
-            {
-                "url": url,
-                "method": "GET"
-            }
-        ]
-    }
-
-    run = client.actor(
-        "scrapearchitect/youtube-audio-mp3-downloader"
-    ).call(
-        run_input=run_input
-    )
-    
-    dataset = client.dataset(
-        run.default_dataset_id
-    )
-    item = next(
-        dataset.iterate_items(),
-        None
+    response = httpx.get(
+        f"https://ytjar.p.rapidapi.com/dl/{video_id}",
+        params={
+            "wait_until_the_file_is_ready": "true",
+            "quality": "low"
+        },
+        headers={
+            "X-RapidAPI-Key":
+                os.getenv("RAPIDAPI_KEY"),
+            "X-RapidAPI-Host":
+                "ytjar.p.rapidapi.com"
+        },
+        timeout=600
     )
 
-    if not item:
+    response.raise_for_status()
+
+    data = response.json()
+
+    if "link" not in data:
         raise Exception(
-            "No audio data returned"
+            f"Audio link not found: {data}"
         )
 
-    tracks = item.get(
-        "downloadable_audio_links",
-        []
-    )
-
-    if not tracks:
-        raise Exception(
-            "No audio tracks found"
-        )
-
-    english = [
-        t for t in tracks
-        if (
-            t.get(
-                "language",
-                ""
-            ).lower().startswith("en")
-        )
-    ]
-
-    if english:
-        return english[0]["url"]
-
-    return tracks[0]["url"]
+    return data["link"]
 
 
 def get_youtube_data(url):
@@ -124,7 +98,8 @@ def get_youtube_data(url):
         raise Exception(
             "No data returned from Apify"
         )
-
+    print(item.keys())
+    print(item.get("duration"))
     raw_metadata = {
         "title": item.get("title"),
         "creator": item.get("channelName"),
@@ -138,11 +113,14 @@ def get_youtube_data(url):
         "platform": "youtube"
     }
 
+    transcript = normalize_transcript(
+        extract_transcript(item)
+    )
+
     return {
         "metadata": normalize_metadata(
             raw_metadata
         ),
-        "transcript": normalize_transcript(
-            extract_transcript(item)
-        )
+        "transcript": transcript,
+        "video_id": item.get("id")
     }
