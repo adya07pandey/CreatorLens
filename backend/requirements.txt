@@ -21,7 +21,7 @@ faster-whisper
 apify-client
 
 reportlab
-
+SentenceTransformer
 python-multipart
 youtube-transcript-api
 requests
