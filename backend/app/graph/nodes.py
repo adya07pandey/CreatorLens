@@ -163,7 +163,6 @@ def answer_node(state):
                 "text": chunk.get("text", "")
             }
         )
-
     return {
         "prompt": prompt,
         "sources": sources

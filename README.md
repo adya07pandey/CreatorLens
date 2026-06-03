@@ -6,6 +6,16 @@ A full-stack RAG (Retrieval-Augmented Generation) chatbot that ingests YouTube v
 
 ---
 
+## Screenshots
+
+**Landing Page**
+![Landing Page](screenshots/Landing_Page.png)
+
+**Chat Page**
+![Chat Page](screenshots/Chat_Page.png)
+
+---
+
 ## Features
 
 - **Multi-platform ingestion** — YouTube videos and Instagram Reels

@@ -28,7 +28,6 @@ def retrieve_chunks(
         )
 
         return []
-
     results = client.query_points(
         collection_name=COLLECTION_NAME,
 
@@ -47,7 +46,6 @@ def retrieve_chunks(
 
         limit=limit
     )
-    
     return [
         hit.payload
         for hit in results.points
