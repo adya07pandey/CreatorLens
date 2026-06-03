@@ -99,6 +99,7 @@ def retrieve_node(state):
         "insights": insight,
         "chat_history": history
     }
+
 def answer_node(state):
 
     start = time.perf_counter()

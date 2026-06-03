@@ -8,7 +8,9 @@ import styles from './Message.module.css';
 
 function Message({ role, content, streaming, sources }) {
   const isUser = role === 'user';
-
+  console.log("sources prop", sources);
+  console.log("evidence", extracted.evidence);
+  console.log("mergedSources", mergedSources);
   const extracted =
     !isUser && !streaming
       ? extractEvidenceFromContent(content)
