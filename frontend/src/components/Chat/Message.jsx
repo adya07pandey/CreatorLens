@@ -8,18 +8,18 @@ import styles from './Message.module.css';
 
 function Message({ role, content, streaming, sources }) {
   const isUser = role === 'user';
+  const extracted =
+  !isUser && !streaming
+  ? extractEvidenceFromContent(content)
+  : { cleaned: content, evidence: [] };
+  
+  const mergedSources = !isUser && !streaming
+  ? mergeSources(extracted.evidence, sources)
+  : [];
+  
   console.log("sources prop", sources);
   console.log("evidence", extracted.evidence);
   console.log("mergedSources", mergedSources);
-  const extracted =
-    !isUser && !streaming
-      ? extractEvidenceFromContent(content)
-      : { cleaned: content, evidence: [] };
-
-  const mergedSources = !isUser && !streaming
-    ? mergeSources(extracted.evidence, sources)
-    : [];
-
   return (
     <div
       className={`${styles.row} ${isUser ? styles.user : styles.assistant}`}
