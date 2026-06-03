@@ -16,7 +16,7 @@ def get_embedding(text: str):
         [text],
         model="voyage-3-lite"
     )
-
+    print("VOYAGE EMBEDDER LOADED")
     return result.embeddings[0]
 
 

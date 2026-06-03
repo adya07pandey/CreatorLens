@@ -17,7 +17,7 @@ client = QdrantClient(
     api_key=os.getenv("QDRANT_API_KEY")
 )
 
-COLLECTION_NAME = "creator_lens"
+COLLECTION_NAME = "CreatorLens"
 
 from qdrant_client.models import (
     VectorParams,
@@ -40,7 +40,7 @@ def create_collection():
     client.create_collection(
         collection_name=COLLECTION_NAME,
         vectors_config=VectorParams(
-            size=1024,
+            size=512,
             distance=Distance.COSINE
         )
     )
