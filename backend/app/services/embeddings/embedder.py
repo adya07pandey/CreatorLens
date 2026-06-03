@@ -1,46 +1,33 @@
 import os
-import requests
+
+from dotenv import load_dotenv
+from sentence_transformers import SentenceTransformer
+
+load_dotenv()
 
 HF_TOKEN = os.getenv("HF_TOKEN")
 
-MODEL_URL = (
-    "https://router.huggingface.co/"
-    "hf-inference/models/"
-    "BAAI/bge-small-en-v1.5/"
-    "pipeline/feature-extraction"
+model = SentenceTransformer(
+    "sentence-transformers/all-MiniLM-L6-v2",
+    token=HF_TOKEN
 )
 
 
-def get_embedding(text):
+def get_embedding(text: str):
 
-    response = requests.post(
-        MODEL_URL,
-        headers={
-            "Authorization": f"Bearer {HF_TOKEN}",
-            "Content-Type": "application/json"
-        },
-        json={
-            "inputs": text
-        },
-        timeout=60
+    embedding = model.encode(
+        text,
+        normalize_embeddings=True
     )
 
-    response.raise_for_status()
-
-    embedding = response.json()
-
-    if isinstance(embedding[0], list):
-        embedding = embedding[0]
-
-    return embedding
+    return embedding.tolist()
 
 
+def get_document_embedding(text: str):
 
-def get_document_embedding(text):
     return get_embedding(text)
 
 
-def get_query_embedding(query):
-    return get_embedding(
-        f"Represent this sentence for searching relevant passages: {query}"
-    )
+def get_query_embedding(query: str):
+
+    return get_embedding(query)

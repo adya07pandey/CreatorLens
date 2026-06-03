@@ -21,6 +21,14 @@ def retrieve_chunks(
         query
     )
 
+    if query_vector is None:
+
+        print(
+            "[RETRIEVAL] Embedding failed"
+        )
+
+        return []
+
     results = client.query_points(
         collection_name=COLLECTION_NAME,
 

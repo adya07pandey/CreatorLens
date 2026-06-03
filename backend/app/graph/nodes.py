@@ -18,11 +18,21 @@ def retrieve_node(state):
 
     start = time.perf_counter()
 
-    chunks = retrieve_chunks(
-        query=state["query"],
-        session_id=state["session_id"]
-    )
+    
+    try:
 
+        chunks = retrieve_chunks(
+            query=state["query"],
+            session_id=state["session_id"]
+        )
+
+    except Exception as e:
+
+        print(
+            f"[RETRIEVE ERROR] {e}"
+        )
+
+        chunks = []
     print(
         f"[LATENCY] Qdrant retrieval: "
         f"{time.perf_counter()-start:.3f}s"

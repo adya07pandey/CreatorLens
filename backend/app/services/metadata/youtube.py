@@ -100,6 +100,7 @@ def get_youtube_data(url):
         )
     print(item.keys())
     print(item.get("duration"))
+    
     raw_metadata = {
         "title": item.get("title"),
         "creator": item.get("channelName"),

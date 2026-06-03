@@ -8,6 +8,7 @@ export async function streamChat(sessionId, message, callbacks) {
   const { onToken, onSources, onDone, onError } = callbacks;
 
   let response;
+  
   try {
     console.log("API_BASE =", API_BASE);
     console.log("Chat URL =", `${API_BASE}/api/chat/stream`);
