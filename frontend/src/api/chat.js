@@ -57,8 +57,11 @@ export async function streamChat(sessionId, message, callbacks) {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      console.log("RAW CHUNK:", chunk);
 
-      buffer += decoder.decode(value, { stream: true });
+      buffer += chunk;
+      
       const parts = buffer.split('\n\n');
       buffer = parts.pop() ?? '';
 
