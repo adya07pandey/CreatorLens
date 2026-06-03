@@ -36,7 +36,7 @@ Frontend (React + Vite)
     ▼
 Backend (FastAPI + LangGraph)
     ├── Ingestion Pipeline
-    │   ├── YouTube  → YouTube Data API v3 (metadata)
+    │   ├── YouTube  → YouTube Data API v3 (metadata + transcript)
     │   │              Rapid API (audio download) → Groq Whisper (fallback)
     │   └── Instagram → Apify Reel Scraper (metadata + transcript)
     │                   yt-dlp audio download → Groq Whisper (fallback)
