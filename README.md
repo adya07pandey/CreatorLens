@@ -28,6 +28,12 @@ A full-stack RAG (Retrieval-Augmented Generation) chatbot that ingests YouTube v
 
 ---
 
+## System Architecture
+
+![System Architecture](screenshots/System_Architecture.png)
+
+--- 
+
 ## Architecture
 
 ```
